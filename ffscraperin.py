@@ -15,7 +15,7 @@ import pandas as pd
 options = webdriver.FirefoxOptions()
 options.add_argument('-headless')
 profile = webdriver.FirefoxProfile()
-profile.set_preference("dom.disable_open_during_load", False)
+# profile.set_preference("dom.disable_open_during_load", False)
 driver = webdriver.Firefox(firefox_binary=r'C:\Program Files\Mozilla Firefox\firefox.exe' , executable_path=r'D:\Downloads\geckodriver.exe', firefox_options=options, firefox_profile=profile)
 conn = sqlite3.connect('Jobs.db')
 cur = conn.cursor()
@@ -55,44 +55,46 @@ indeed_url = 'https://www.indeed.com/'
     #     print(link)
     
 def indeed_scrape(job_titles, locations):
-    for job in job_titles:
-        cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed ' + job +']([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
-        pgnm = []
-        for x in range(0,500, 20):
-            pgnm.append('&start='+str(x))
-        for nm in pgnm:
-            urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + locations[0] + nm
-            print(urlbuild)
-            driver.get(urlbuild)
-            try:
-                driver.find_element_by_xpath('//*[@id="popover-close-link"]')
-            except NoSuchElementException:
-                pass
-            else:
-                driver.refresh()
-            row = driver.find_elements_by_class_name('title')
-            for item in row:
-                item.click()
-                time.sleep(1)
+    
+    for location in locations:
+        for job in job_titles:
+            cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed ' + job +']([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
+            pgnm = []
+            for x in range(0,500, 20):
+                pgnm.append('&start='+str(x))
+            for nm in pgnm:
+                urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + locations[0] + nm
+                print(urlbuild)
+                driver.get(urlbuild)
                 try:
-                    driver.find_element_by_id('vjs-container')
+                    driver.find_element_by_xpath('//*[@id="popover-close-link"]')
                 except NoSuchElementException:
                     pass
                 else:
-                    jobcont = driver.find_element_by_id('vjs-container')
-                    cont = jobcont.get_attribute('innerHTML')
-                    soup = BeautifulSoup(cont, 'lxml')
-                    title = soup.find('div', id='vjs-jobtitle')
-                    company = soup.find('span', id='vjs-cn')
-                    location = soup.find('span', id='vjs-loc')
-                    desc = soup.find('div', id='vjs-desc')
+                    driver.refresh()
+                row = driver.find_elements_by_class_name('title')
+                for item in row:
+                    item.click()
+                    time.sleep(1)
                     try:
-                        jobinfo = [title.text, company.text, location.text, desc.text]
-                    except:
+                        driver.find_element_by_id('vjs-container')
+                    except NoSuchElementException:
                         pass
                     else:
-                        cur.execute('INSERT OR IGNORE INTO [Jobs Indeed ' +job+']([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',jobinfo)
-                        conn.commit()
+                        jobcont = driver.find_element_by_id('vjs-container')
+                        cont = jobcont.get_attribute('innerHTML')
+                        soup = BeautifulSoup(cont, 'lxml')
+                        title = soup.find('div', id='vjs-jobtitle')
+                        company = soup.find('span', id='vjs-cn')
+                        location = soup.find('span', id='vjs-loc')
+                        desc = soup.find('div', id='vjs-desc')
+                        try:
+                            jobinfo = [title.text, company.text, location.text, desc.text]
+                        except:
+                            pass
+                        else:
+                            cur.execute('INSERT OR IGNORE INTO [Jobs Indeed ' +job+']([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',jobinfo)
+                            conn.commit()
 
             
     driver.close()
