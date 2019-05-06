@@ -20,7 +20,7 @@ driver = webdriver.Firefox(firefox_binary=r'C:\Program Files\Mozilla Firefox\fir
 conn = sqlite3.connect('Jobs.db')
 cur = conn.cursor()
 job_titles = ["Data+Analyst", "Data+Scientist", "Data+Engineer", "Big+Data", "Machine+Learning+Engineer"]
-locations = ['Greater+Toronto+Area%2C+ON', "Vancouver,+BC"]
+locations = ['Greater+Toronto+Area%2C+ON', "Vancouver%2C+BC"]
 cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed In]([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
 cur.execute('CREATE TABLE IF NOT EXISTS [Jobs] ([Job title], [Company], [Location], [Date Scraped], [Date Posted], [Source], [Description]) ')
 conn.commit()
@@ -53,11 +53,12 @@ indeed_url = 'https://www.indeed.ca'
     #     an = title.find('a')
     #     link = an.get('href')
     #     print(link)
+    
 def indeed_scrape(job_titles, locations):
     for job in job_titles:
         cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed ' + job +']([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
         pgnm = []
-        for x in range(0,100, 20):
+        for x in range(0,500, 20):
             pgnm.append('&start='+str(x))
         for nm in pgnm:
             urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + locations[0] + nm
