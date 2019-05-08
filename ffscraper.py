@@ -25,7 +25,7 @@ cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed In]([Job title] TEXT, [Comp
 cur.execute('CREATE TABLE IF NOT EXISTS [Jobs] ([Job title], [Company], [Location], [Date Scraped], [Date Posted], [Source], [Description]) ')
 conn.commit()
 #https://www.indeed.ca/jobs?q=Data+Analyst&l=Greater+Toronto+Area%2C+ON , sample link
-indeed_url = 'https://www.indeed.ca'
+
 # def indeed_req(job_titles,locations):
 #     pglist = []
 #     urlbuild = indeed_url+"/jobs?q=" + 'Data+Analyst' + '&l=' + 'Greater+Toronto+Area%2C+ON'
@@ -54,40 +54,68 @@ indeed_url = 'https://www.indeed.ca'
     #     link = an.get('href')
     #     print(link)
 
-def indeed_scrape(job_titles, locations):
-    for job in job_titles:
-        cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed ' + job +']([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
-        pgnm = []
-        for x in range(0,500, 20):
-            pgnm.append('&start='+str(x))
-        for nm in pgnm:
-            urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + locations[0] + nm
-            print(urlbuild)
-            n = requests.get(urlbuild)
-            soup = BeautifulSoup(n.text,'lxml')
-            links = soup.find_all('div',class_='title')
-            pglnklst = []
-            for row in links:
-                link = row.find('a', href=True)
-                pglnklst.append(link['href'])
-            for ex in pglnklst:
-                st = requests.get(indeed_url+ex)
-                soup = BeautifulSoup(st.text, 'lxml')
-                title = soup.find('h3',class_='icl-u-xs-mb--xs icl-u-xs-mt--none jobsearch-JobInfoHeader-title')
-                company = soup.find('div', class_='icl-u-lg-mr--sm icl-u-xs-mr--xs')
-                location = soup.find('span',class_='jobsearch-JobMetadataHeader-iconLabel')
-                description = soup.find('div', id='jobDescriptionText')
-                nxtrow = [title.text, company.text, location.text, description.text]
-                cur.execute('INSERT OR IGNORE INTO [Jobs Indeed ' +job+']([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',nxtrow)
-                conn.commit()
+def indeedca_scrape(job_titles, locations):
+    indeed_url = 'https://www.indeed.ca'
+    pglnklst = []
+    for location in locations:
+        for job in job_titles:
+            cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed ' + job +']([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
+            pgnm = []
+            for x in range(0,500, 20):
+                pgnm.append('&start='+str(x))
+            for nm in pgnm:
+                urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + location + nm
+                print(urlbuild)
+                n = requests.get(urlbuild)
+                soup = BeautifulSoup(n.text,'lxml')
+                links = soup.find_all('div',class_='title')
+                for row in links:
+                    link = row.find('a', href=True)
+                    pglnklst.append(link['href'])
+    nodup = list(set(pglnklst))
+    for ex in nodup:
+        st = requests.get(indeed_url+ex)
+        soup = BeautifulSoup(st.text, 'lxml')
+        title = soup.find('h3',class_='icl-u-xs-mb--xs icl-u-xs-mt--none jobsearch-JobInfoHeader-title')
+        company = soup.find('div', class_='icl-u-lg-mr--sm icl-u-xs-mr--xs')
+        location = soup.find('span',class_='jobsearch-JobMetadataHeader-iconLabel')
+        description = soup.find('div', id='jobDescriptionText')
+        nxtrow = [title.text, company.text, location.text, description.text]
+        cur.execute('INSERT OR IGNORE INTO [Jobs Indeed ' +job+']([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',nxtrow)
+        conn.commit()
 
-            
-    driver.close()
+def indeedusa_scrape(job_titles, locations):
+    indeed_url = 'https://www.indeed.com'
+    pglnklst = []
+    for location in locations:
+        for job in job_titles:
+            cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed ' + job +']([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
+            pgnm = []
+            for x in range(0,500, 20):
+                pgnm.append('&start='+str(x))
+            for nm in pgnm:
+                urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + location + nm
+                print(urlbuild)
+                n = requests.get(urlbuild)
+                soup = BeautifulSoup(n.text,'lxml')
+                links = soup.find_all('div',class_='title')
+                for row in links:
+                    link = row.find('a', href=True)
+                    pglnklst.append(link['href'])
+    nodup = list(set(pglnklst))
+    for ex in nodup:
+        st = requests.get(indeed_url+ex)
+        soup = BeautifulSoup(st.text, 'lxml')
+        title = soup.find('h3',class_='icl-u-xs-mb--xs icl-u-xs-mt--none jobsearch-JobInfoHeader-title')
+        company = soup.find('div', class_='icl-u-lg-mr--sm icl-u-xs-mr--xs')
+        location = soup.find('span',class_='jobsearch-JobMetadataHeader-iconLabel')
+        description = soup.find('div', id='jobDescriptionText')
+        nxtrow = [title.text, company.text, location.text, description.text]
+        cur.execute('INSERT OR IGNORE INTO [Jobs Indeed ' +job+']([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',nxtrow)
+        conn.commit()
+
     
 
-start_time = time.time()
-indeed_scrape(job_titles,locations)
-print('Beautifulsoup/Requests time: %s' %(time.time-start.time) )
 
 
 job_titles = [r'data%20analyst', r'data%20science', r'big%20data', r'machine%20learning%20engineer', r'data%20engineer']
