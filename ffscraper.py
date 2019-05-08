@@ -85,9 +85,9 @@ def indeed_scrape(job_titles, locations):
     driver.close()
     
 
-
+start_time = time.time()
 indeed_scrape(job_titles,locations)
-
+print('Beautifulsoup/Requests time: %s' %(time.time-start.time) )
 
 
 job_titles = [r'data%20analyst', r'data%20science', r'big%20data', r'machine%20learning%20engineer', r'data%20engineer']
