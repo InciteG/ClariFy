@@ -11,70 +11,38 @@ from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.common.by import By
 import pandas as pd
 """Webdriver Setup and SQL Setup"""
-
-options = webdriver.FirefoxOptions()
-options.add_argument('-headless')
-profile = webdriver.FirefoxProfile()
+#removed selenium dependency and improving faster scraping time- removed linkedin support
+# options = webdriver.FirefoxOptions()
+# options.add_argument('-headless')
+# profile = webdriver.FirefoxProfile()
 # profile.set_preference("dom.disable_open_during_load", False)
-driver = webdriver.Firefox(firefox_binary=r'C:\Program Files\Mozilla Firefox\firefox.exe' , executable_path=r'D:\Downloads\geckodriver.exe', firefox_options=options, firefox_profile=profile)
+# driver = webdriver.Firefox(firefox_binary=r'C:\Program Files\Mozilla Firefox\firefox.exe' , executable_path=r'D:\Downloads\geckodriver.exe', firefox_options=options, firefox_profile=profile)
 conn = sqlite3.connect('JobDBa.db')
 cur = conn.cursor()
 # job_titles = ["Data+Analyst", "Data+Scientist", "Data+Engineer", "Big+Data", "Machine+Learning+Engineer"]
 # locations = ['Greater+Toronto+Area%2C+ON', "Vancouver%2C+BC"]
-job_titles = ["Data+Analyst", "Data+Scientist", "Data+Engineer", "Big+Data", "Machine+Learning+Engineer"]
-locations = ['New+York%2C+NY', "San+Francisco%2C+CA", 'Austin%2C+TX', 'Chicago%2C+IL', 'Silicon+Valley%2C+CA', 'Los+Angeles%2C+CA','Boston%2C+MA', 'Houston%2C+TX','Dallas-Fort+Worth%2C+TX','Seattle%2C+WA','Columbus%2C+OH']
 
-# cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed In]([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
-# cur.execute('CREATE TABLE IF NOT EXISTS [Jobs] ([Job title], [Company], [Location], [Date Scraped], [Date Posted], [Source], [Description]) ')
-# conn.commit()
 #https://www.indeed.ca/jobs?q=Data+Analyst&l=Greater+Toronto+Area%2C+ON , sample link
 
-# def indeed_req(job_titles,locations):
-#     pglist = []
-#     urlbuild = indeed_url+"/jobs?q=" + 'Data+Analyst' + '&l=' + 'Greater+Toronto+Area%2C+ON'
-#     pg = requests.get(urlbuild)
-#     soup = BeautifulSoup(pg.text,'lxml')
-#     ho = soup.find_all('div', class_='title')
-#     for item in ho:
-#         a = item.find('a')
-#         pglist.append(a.get('href'))
-    
-#     for lnk in pglist:
-#         driver.get(indeed_url + lnk)
-#         time.sleep(5)
-    
-
-# indeed_req('Data Analyst', 'Greater Toronto Area, ON')
-# search_content = driver.find_element_by_xpath('//*[@id="resultsCol"]')
-    # chtml = search_content.get_attribute("innerHTML")
-    # soup = BeautifulSoup(chtml,'lxml')
-    # row = soup.find_all('div', class_='jobsearch-SerpJobCard unifiedRow row result clickcard')
-    # linktitle = []
-    # for item in row:
-    #     title = item.find('div', class_='title')
-    #     print(title)
-    #     an = title.find('a')
-    #     link = an.get('href')
-    #     print(link)
-
+#scrape indeed from indeed.ca
 def indeedca_scrape(job_titles, locations):
-    indeed_url = 'https://www.indeed.ca'
-    cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed]([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
+    indeed_url = 'https://www.indeed.ca' #base url
+    cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed]([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ') #only allow unique descriptions to be stored
     pglnklst = []
     for location in locations:
         for job in job_titles:
             pgnm = []
-            for x in range(0,400, 20):
-                pgnm.append('&start='+str(x))
+            for x in range(0,400, 20): #400 applications per category
+                pgnm.append('&start='+str(x)) #url syntax
             for nm in pgnm:
                 urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + location + nm
-                n = requests.get(urlbuild)
+                n = requests.get(urlbuild) 
                 soup = BeautifulSoup(n.text,'lxml')
                 links = soup.find_all('div',class_='title')
                 for row in links:
                     link = row.find('a', href=True)
                     pglnklst.append(link['href'])
-    nodup = list(set(pglnklst))
+    nodup = list(set(pglnklst)) #remove duplicates from urllist, shorten run time
     print(len(nodup))
     for ex in nodup:
         st = requests.get(indeed_url+ex)
@@ -84,13 +52,13 @@ def indeedca_scrape(job_titles, locations):
         location = soup.find('span',class_='jobsearch-JobMetadataHeader-iconLabel')
         description = soup.find('div', id='jobDescriptionText')
         try:
-            nxtrow = [title.text, company.text, location.text, description.text]
+            nxtrow = [title.text, company.text, location.text, description.text] #if empty skip insert into database, pass over webpages that were not accessed correctly
         except:
             pass
         else:
             cur.execute('INSERT OR IGNORE INTO [Jobs Indeed]([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',nxtrow)
             conn.commit()
-
+#scraped indeed.com
 def indeedusa_scrape(job_titles, locations):
     indeed_url = 'https://www.indeed.com'
     cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed]([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
@@ -135,7 +103,7 @@ def indeedusa_scrape(job_titles, locations):
                     pass
                 else:
                     location = i4[len(i4)-1]
-                    description = soup.find('div', id='jobDescriptionText')
+                    description = soup.find('div', id='jobDescriptionText') #try,excepts to prevent issues with accessing content stopping scraper
                     try:
                         nxtrow = [title.text, company.text, location.text, description.text]
                     except:
@@ -147,59 +115,7 @@ def indeedusa_scrape(job_titles, locations):
     
 indeedusa_scrape(job_titles,locations)
 
-
-job_titles = [r'data%20analyst', r'data%20science', r'big%20data', r'machine%20learning%20engineer', r'data%20engineer']
-locations = [r'Toronto%2C%20Ontario%2C%20Canada',r'Vancouver%2C%20British%20Columbia%2C%20Canada', r'San%20Francisco%2C%20California']
-#https://www.linkedin.com/jobs/search/?keywords=data%20analyst&location=Toronto%2C%20Ontario%2C%20Canada&locationId=PLACES.ca.2-1-0-1080&start25 sample linkedin link
-def linkedin_scrape(job_titles, locations):
-    url = r"https://www.linkedin.com/jobs/search/"
-    
-    for location in locations:
-        for job in job_titles:
-            cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Linkedin ' + job +']([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ')
-            pgnm = []
-            for x in range(0,125, 25):
-                pgnm.append('&start'+str(x))
-            for nm in pgnm:
-                urlbuild = url + '?keywords=' + job + '&location=' + location + nm
-                driver.get(urlbuild)
-                time.sleep(2)
-                row = driver.find_elements_by_class_name('job-card-search__title artdeco-entity-lockup__title ember-view')
-                for link in row:
-                    link.click()
-                    time.sleep(1)
-                    try:
-                        driver.find_element_by_class_name('jobs-details__main-content jobs-details__main-content--single-pane full-width relative')
-                    except NoSuchElementException:
-                        pass
-                    else:
-                        jobcont = driver.find_element_by_id('jobs-details__main-content jobs-details__main-content--single-pane full-width relative')
-                        cont = jobcont.get_attribute('innerHTML')
-                        soup = BeautifulSoup(cont, 'lxml')
-                        title = soup.find('h1', class_='jobs-details-top-card__job-title t-20 t-black t-normal')
-                        
-                        company = soup.find('a', class_='jobs-details-top-card__company-url ember-view')
-                        location = soup.find('span', class_='jobs-details-top-card__bullet')
-                        print(title.text)
-                        print(company.text)
-                        print(location.text)
-                        jobcont = driver.find_element_by_class_name('jobs-box__html-content jobs-description-content__text t-14 t-black--light t-normal')
-                        cont = jobcont.get_attribute('innerHTML')
-                        soup = BeautifulSoup(cont, 'lxml')
-                        desc = soup.find('span')
-                        try:
-                            jobinfo = [title.text, company.text, location.text, desc.text]
-                        except:
-                            pass
-                        else:
-                            print(jobinfo)
-                            cur.execute('INSERT OR IGNORE INTO [Jobs Linkedin ' +job+']([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',jobinfo)
-                            conn.commit()
-    driver.close()
-
-# linkedin_scrape(job_titles, locations)
-
-# if __name__ == '__main__':
-#     # indeedca_scrape(job_titles,locations)
-#     indeedusa_scrape(job_titles,locations)
-
+if __name__ == "__main__":
+    job_titles = ["Data+Analyst", "Data+Scientist", "Data+Engineer", "Big+Data", "Machine+Learning+Engineer"]
+    locations = ['New+York%2C+NY', "San+Francisco%2C+CA", 'Austin%2C+TX', 'Chicago%2C+IL', 'Silicon+Valley%2C+CA', 'Los+Angeles%2C+CA','Boston%2C+MA', 'Houston%2C+TX','Dallas-Fort+Worth%2C+TX','Seattle%2C+WA','Columbus%2C+OH']
+    indeedusa_scrape(job_titles,locations)
