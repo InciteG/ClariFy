@@ -112,9 +112,6 @@ def indeedusa_scrape(job_titles, locations):
                         cur.execute('INSERT OR IGNORE INTO [Jobs Indeed]([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',nxtrow)
                         conn.commit()
 
-    
-indeedusa_scrape(job_titles,locations)
-
 if __name__ == "__main__":
     job_titles = ["Data+Analyst", "Data+Scientist", "Data+Engineer", "Big+Data", "Machine+Learning+Engineer"]
     locations = ['New+York%2C+NY', "San+Francisco%2C+CA", 'Austin%2C+TX', 'Chicago%2C+IL', 'Silicon+Valley%2C+CA', 'Los+Angeles%2C+CA','Boston%2C+MA', 'Houston%2C+TX','Dallas-Fort+Worth%2C+TX','Seattle%2C+WA','Columbus%2C+OH']
