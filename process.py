@@ -1,0 +1,104 @@
+import nltk
+import re
+from nltk.tokenize import wordpunct_tokenize
+from nltk.stem.snowball import SnowballStemmer
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
+def set_stop(add=True, punc=True, num=True, *args, **kwargs):
+    #set stop_words
+    stop_words = ENGLISH_STOP_WORDS
+    stopw = nltk.corpus.stopwords.words('english') #add additional stop words
+    stop_words = stop_words.union(stopw) #add punc removal
+    #add stop_words unable to be filtered out from other means
+    if add is True:
+        add_stop=['lab','laboratory','company','inc','technology','computer','institute','public','\r','connect','people','fb','g','ge',
+                  'accomadate','sexuality','sex','orientation','orient','gender','race','ethnicity','ethnic','equal','opportunity','minor',
+                  'disable','veteran','female','male','employer','employee','network','require','affirm','jp','jpmorgan','chase','usa','america','canada',
+                  'career','job','compani', 'work','location','origin','religion','ident','sexual','color','identity','nation','national',
+                 'disability','protect','protected','background','screening','screen','drug','diversity','diverse','employment',
+                 'employ','affirimative','action','applicant','discrimination','discriminate','apply','application', 'resume','agency','agent',
+                 '\r \r', 'proud','inclusive','inclusion','recruit','recruitment','recruiter','hire','submit','agree','agreement',
+                 'marital', 'status', 'marriage', 'help','require','perform','duty','duti','provide','accomod', 'authorization','author',
+                 'type','time','salary', '00','000 00', '000', 'citizenship','citizen','large','identify','crime','criminal', 
+                 'ancestry', "you're","you'r","we're","we'r", 'minority','abuse', 'affirm', 'united', 'states', 'province', 'shift',
+                 '’','skill','ability', 'skills','role', 'assist','prepare','office','email','com','hr','contact','require','requir',
+                 'benefit','insure','health','vision','dental','plan', 'pay','paid','staff','401','RSP','k','consider','consid','candid','safety','safeti',
+                 'u','hour','perform','act','policy','polici', 'compensation','compensate','match','matching','insurance','insur', 'claim'
+                 'texas','texa','state','tuition','traffic','million','billion','lunch','coffee','include','use','inform','age','agree','agreement',
+                 'law','regard','applic','www','driver','401k','express','vet','veterans','disabilities','eeo','pto','leave','paternity','mat','maternity'
+                 'world','join','value','build'] #removal of stop-words that were unable to be filtered out from other methods
+        stop_words = stop_words.union(add_stop)
+    else:
+        print('add=false')
+    #remove punc not captured by regex
+    if punc is True:
+        punct = ['.',',','"','?', '!', ':',';','(',')','[',']','{','}','%','$','#','@','&','*',"'",'-','>','<','/','^', ''] 
+        stop_words = stop_words.union(punct)
+    else:
+        print('punc=false')
+    #remove numbers 1 through 10 from stopword removal - keep years experience desired
+    if num is True:
+        high = range(11,4400,1)
+        sw = []
+        for item in high:
+            sw.append(str(item))
+        stop_words = stop_words.union(sw)
+    else:
+        print('num=false')
+    return stop_words
+
+#call after processing
+def gg_tokenize(text, stop_words, pos= True, stop=True, stem=True, **kwargs):
+    nre = re.sub(r"(\n)", r" ", text) #remove "\n" characters
+    cap = re.sub(r"\b([a-z0-9]+)([A-Z])", r"\1 \2", nre) #Split words that were misformatted and conjoined together e.g. "tasksProgram"
+    cap = re.sub(r"\b([a-z]+)([0-9])", r"\1 \2", cap) #Split words that were misformatted and conjoined together e.g. "tasksProgram"
+    if pos is True:
+        tokenize = nltk.wordpunct_tokenize(cap)
+        pos_tag = nltk.pos_tag(tokenize)
+        remove = ['PRP$','WP$','WP','WRB','WDT','UH','TO','RP','RBS','RBR','RB','PRP','MD','LS','JJS','JJ','JJR','FW','IN','DT','CC']
+        out = []
+        for tok in pos_tag:
+            if tok[1] in remove:
+                pass
+            else:
+                out.append(tok[0])
+        cap = ' '.join(out)
+    else:
+        pass
+    punc = re.sub(r"([-./\\}{_*&\"^@#!\)\(?=+])([a-z0-9A-Z])", r"\1 \2", cap) #remove punctuation by replacing with space, allows tokenize to occur more effectively
+    tok = re.split(r"[ .*@|\/,<>:;&%$#@\+!)?(\\='^_-]", punc.lower()) #tokenize based on any left over punctuation or spaces
+    if stop is True:
+        h = [n for n in tok if not n in stop_words] #remove stop_words after tokenization, leftovers will be removed with stem stop_words
+    else:
+        h = tok 
+    if stem is True:
+        stemmer = SnowballStemmer('english')
+        stemm = [stemmer.stem(word) for word in h]   #stem words after stop_word removal and tokenization
+        return stemm
+    else:
+        return h
+
+def wp_tokenize(text, stop_words, pos= True, stop=True, stem=True,  **kwargs):
+    tokenize = nltk.wordpunct_tokenize(text)
+    if pos is True:
+        pos_tag = nltk.pos_tag(tokenize)
+        remove = ['PRP$','WP$','WP','WRB','WDT','UH','TO','RP','RBS','RBR','RB','PRP','MD','LS','JJS','JJ','JJR','FW','IN','DT','CC']
+        tokenize = []
+        for tok in pos_tag:
+            if tok[1] in remove:
+                pass
+            else:
+                tokenize.append(tok[0])
+    else:
+        pass
+
+    if stop is True:
+        tokenize = [n for n in tokenize if not n in stop_words] #remove stop_words after tokenization, leftovers will be removed with stem stop_words
+    else:
+        pass
+    if stem is True:
+        stemmer = SnowballStemmer('english')
+        stemm = [stemmer.stem(word) for word in tokenize]   #stem words after stop_word removal and tokenization
+        return stemm
+    else:
+        return tokenize

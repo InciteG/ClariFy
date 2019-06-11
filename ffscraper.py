@@ -27,12 +27,12 @@ cur = conn.cursor()
 #scrape indeed from indeed.ca
 def indeedca_scrape(job_titles, locations):
     indeed_url = 'https://www.indeed.ca' #base url
-    cur.execute('CREATE TABLE IF NOT EXISTS [Jobs Indeed]([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, UNIQUE([Description])) ') #only allow unique descriptions to be stored
+    cur.execute('CREATE TABLE IF NOT EXISTS [Test Session]([Job title] TEXT, [Company] TEXT, [Location] TEXT, [Description] TEXT, [URL] TEXT, UNIQUE([Description])) ') #only allow unique descriptions to be stored
     pglnklst = []
     for location in locations:
         for job in job_titles:
             pgnm = []
-            for x in range(0,400, 20): #400 applications per category
+            for x in range(0,120, 20): #400 applications per category
                 pgnm.append('&start='+str(x)) #url syntax
             for nm in pgnm:
                 urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + location + nm
@@ -52,12 +52,13 @@ def indeedca_scrape(job_titles, locations):
         location = soup.find('span',class_='jobsearch-JobMetadataHeader-iconLabel')
         description = soup.find('div', id='jobDescriptionText')
         try:
-            nxtrow = [title.text, company.text, location.text, description.text] #if empty skip insert into database, pass over webpages that were not accessed correctly
+            nxtrow = [title.text, company.text, location.text, description.text, indeed_url+ex] #if empty skip insert into database, pass over webpages that were not accessed correctly
         except:
             pass
         else:
-            cur.execute('INSERT OR IGNORE INTO [Jobs Indeed]([Job Title], [Company], [Location], [Description]) Values(?,?,?,?)',nxtrow)
+            cur.execute('INSERT OR IGNORE INTO [Jobs Indeed]([Job Title], [Company], [Location], [Description], [URL]) Values(?,?,?,?,?)',nxtrow)
             conn.commit()
+
 #scraped indeed.com
 def indeedusa_scrape(job_titles, locations):
     indeed_url = 'https://www.indeed.com'
