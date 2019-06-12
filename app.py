@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*
 import numpy as np
+import os
 import pandas as pd 
 import dash
 import json
@@ -20,6 +21,7 @@ import numpy as np
 import dash_dangerously_set_inner_html
 
 app = dash.Dash()
+server = app.server
 app.config['suppress_callback_exceptions']=True
 app.index_string= """
 
