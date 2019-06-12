@@ -271,20 +271,27 @@ def conv_top(corpus, df, stop_words, max_df=.8, min_df=.02, top=30, **kwargs):
     return cluster_top_vectors
 
 def pipe(df, cluster_num = 8, **kwargs):
-    #scrape, store in sql, load into pipe, 
-    #tfidf, w2v, or lda
-    #kmeans or lda cluster
-    #Output tables for data insertion into div
+    #clean
     cleaned = text_process(df)
+    #set stop words
     stop_words = set_stop(cleaned, df)
+    #stem stop for tfidf
     stem_stop = [stemmer.stem(word) for word in stop_words]
+    #tokenize
     gg_corpus = [gg_tokenize(document) for document in cleaned]
+    #tfidf
     tmatrix = tfidf_get(cleaned, stem_stop, gg_tokenize)
+    #kmeans
     km, dfk = kmeans(tmatrix, df, n_clusters=cluster_num)
+    #graph
     dfkg = graph_cluster(tmatrix, dfk)
+    #get top vectors
     top = conv_top(cleaned, dfk, stop_words)
+    #combine
     dfkg['Top Vectors'] = dfkg['Cluster Label'].map(top)
+    #lda
     lad, label_df, top_doc = lda_get(gg_corpus, num_topics=14)
+    #combine
     dflda = pd.merge(df, label_df, left_index=True, right_index=True, how='inner')
     dfldat = graph_cluster(tmatrix, dflda)
     return dfkg, dfldat

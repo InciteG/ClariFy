@@ -13,7 +13,7 @@ def indeedca_scrape(job_titles):
     for location in locations:
         for job in job_titles:
             pgnm = []
-            for x in range(0, 60, 20): #40 applications per category
+            for x in range(0, 20, 20): #40 applications per category
                 pgnm.append('&start='+str(x)) #url syntax
             for nm in pgnm:
                 urlbuild = indeed_url+"/jobs?q=" + job + '&l=' + location + nm
