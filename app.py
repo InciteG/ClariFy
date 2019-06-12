@@ -43,7 +43,7 @@ app.index_string= """
 
     <style>
     body {
-    background-image: "assets/images/bluepaint.jpeg";
+    background-image: url("assets/images/bluepaint.jpeg");
     background-repeat: no-repeat;
     background-attachment: fixed;
     font-family: 'Oswald', sans-serif;
