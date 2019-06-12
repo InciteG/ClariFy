@@ -19,7 +19,6 @@ from fullrun import pipe
 import re
 import numpy as np 
 import dash_dangerously_set_inner_html
-import boto3
 
 app = dash.Dash()
 server = app.server
@@ -44,7 +43,7 @@ app.index_string= """
 
     <style>
     body {
-    background-image: url("/assets/images/bluepaint.jpeg");
+    background-image: url("app/assets/images/bluepaint.jpeg");
     background-repeat: no-repeat;
     background-attachment: fixed;
     font-family: 'Oswald', sans-serif;
@@ -71,7 +70,7 @@ app.index_string= """
             <div id="site-head" class="container">
                   <nav class="navbar navbar-expand-lg navbar-light bg-light">
                       <div class="navbar-header">
-                            <a class="navbar-brand" href="#"><img src="https://clarifygg.s3.ca-central-1.amazonaws.com/Clarify.png" class="img-responsive logo" ></a>
+                            <a class="navbar-brand" href="#"><img src=url("assets/images/Clarify.png") class="img-responsive logo" ></a>
                       </div>
                       <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav">
