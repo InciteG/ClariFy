@@ -17,6 +17,7 @@ dash-table==3.7.0
 decorator==4.4.0
 docutils==0.14
 Flask==1.0.3
+Flask-Caching==1.7.2
 Flask-Compress==1.4.0
 gensim==3.7.3
 gunicorn==19.9.0
