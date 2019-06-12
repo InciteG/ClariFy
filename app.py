@@ -20,10 +20,10 @@ import re
 import numpy as np 
 import dash_dangerously_set_inner_html
 
+
 app = dash.Dash(__name__)
 server = app.server
 app.config['suppress_callback_exceptions']=True
-
 app.index_string= """
 
 <!DOCTYPE html>
@@ -217,7 +217,7 @@ def scrape_cont(n_clicks, input1):
 #processing page
 process_layout = html.Div([ 
     html.H1('Text Processing'),
-    dcc.Input(id='input-1-state', type='text', value='', placeholder='Enter a job posting...', style={'height':'30px', 'width':'180px', 'font-size':'medium'}),
+    dcc.Input(id='input-1-state', type='text', value='', placeholder='Enter a string...', style={'height':'30px', 'width':'180px', 'font-size':'medium'}),
     dcc.Checklist(id = 'checklist-1',
     options=[
         {'label': 'Add-on stop words', 'value': 'ADD'},
