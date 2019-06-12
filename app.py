@@ -20,7 +20,7 @@ import re
 import numpy as np 
 import dash_dangerously_set_inner_html
 
-app = dash.Dash()
+app = dash.Dash(__name__)
 server = app.server
 app.config['suppress_callback_exceptions']=True
 
