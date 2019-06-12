@@ -43,7 +43,7 @@ app.index_string= """
 
     <style>
     body {
-    background-image: url("app/assets/images/bluepaint.jpeg");
+    background-image: "app/assets/images/bluepaint.jpeg";
     background-repeat: no-repeat;
     background-attachment: fixed;
     font-family: 'Oswald', sans-serif;
@@ -70,7 +70,7 @@ app.index_string= """
             <div id="site-head" class="container">
                   <nav class="navbar navbar-expand-lg navbar-light bg-light">
                       <div class="navbar-header">
-                            <a class="navbar-brand" href="#"><img src=url("assets/images/Clarify.png") class="img-responsive logo" ></a>
+                            <a class="navbar-brand" href="#"><img src="assets/images/Clarify.png" class="img-responsive logo" ></a>
                       </div>
                       <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav">
