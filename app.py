@@ -134,7 +134,7 @@ index_page = html.Div([
         html.A(html.Img(src='/assets/images/github.png', style={'height':'60px','width':'60px'}), href='https://github.com/InciteG',),
         html.Br(),
         html.Br(),
-        html.A('Resume', className='btn btn-primary', href='/assets/images/Gary_Guo_Resume_617.pdf',role='button', style={'font-size':'medium'}),
+        html.A('Resume', className='btn btn-primary', href='/assets/images/Gary_Guo_Resume.pdf',role='button', style={'font-size':'medium'}),
         
         ], style={ 'width':'75%', 'margin': 'auto'})
 
